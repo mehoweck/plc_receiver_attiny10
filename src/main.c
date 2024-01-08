@@ -66,21 +66,7 @@ ISR(PCINT0_vect) {
             }
         }      
         PIN_ON(PB2);
-        // uint8_t value = 0;
-        // for(uint8_t i = 0; i < 8; i++) {
-        //     _delay_us(50);
-        //     uint8_t pinValue = (PINB & (1 << INPUT_PIN));
-        //     if (pinValue) {
-        //         PIN_OFF(PB2);
-        //         PIN_ON(PB2);
-        //     } else {
-        //         PIN_ON(PB2);
-        //         PIN_OFF(PB2);
-        //     }
-        //     value = (value << 1) | pinValue;
-        //     _delay_us(50);
-        // }
-
+        
         _delay_ms(500);
         PIN_OFF(PB2);
 
