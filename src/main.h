@@ -12,8 +12,8 @@
 #define PIN_ON(PIN) PORTB |= 1 << PIN
 #define PIN_OFF(PIN) PORTB &= ~(1 << PIN)
 
-#define PIN_IS_LO(PIN) !(PINB & (1 << PIN))
-#define PIN_IS_HI(PIN) PINB & (1 << PIN)
+#define IS_LO(PIN) !(PINB & (1 << PIN))
+#define IS_HI(PIN) (PINB & (1 << PIN))
 
 //#define PIN_ON(PORT, PIN) PORT |= 1 << PIN
 //#define PIN_OFF(PORT, PIN) PORT &= ~(1 << PIN)
