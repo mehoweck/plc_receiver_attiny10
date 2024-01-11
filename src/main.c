@@ -7,6 +7,8 @@
 
 #define F_CPU 8000000UL
 
+#define ADDRESS 2
+
 #define INPUT_PIN PB0
 
 #define ADDRESS_LENGTH 4
@@ -24,7 +26,7 @@ typedef union {
         volatile uint8_t param2 : PARAM2_LENGTH;   // 3 bits for param2
         volatile uint8_t param3 : PARAM3_LENGTH;   // 3 bits for param3
     } fields;
-    volatile uint16_t rawPayload;
+    volatile uint16_t rawData;
 } Command;
 
 volatile Command command;
@@ -59,10 +61,11 @@ ISR(PCINT0_vect) {
     if (raisingEdge) {
         if (readBitsCount++ < FRAME_LENGTH) {
             _delay_us(50);  // wait for the middle of the transmitted bit
-            command.rawPayload = (command.rawPayload << 1) | IS_HI(INPUT_PIN);
+            command.rawData = (command.rawData << 1) | IS_HI(INPUT_PIN);
         } else {
+            // HIGH state set after the command is sent
             readMode = 0;
-            commandReady = IS_HI(INPUT_PIN);
+            commandReady = IS_HI(INPUT_PIN) & ((ADDRESS & command.fields.address) > 0);
         }
     } else { // if falling edge
         if (!readMode) { // new command
@@ -73,6 +76,32 @@ ISR(PCINT0_vect) {
     }
 }
 
+void handle_command(Command command) {
+    switch (command.fields.command) {
+    
+    case CMD_LED_OFF:
+        PIN_OFF(PB1);
+        PIN_OFF(PB2);
+        break;
+
+    case CMD_LED_ON:
+        PIN_ON(PB1);
+        break;
+
+    case CMD_LED_UP:
+        PIN_ON(PB1);
+        PIN_ON(PB2);
+        break;
+
+    case CMD_LED_DOWN:
+        PIN_ON(PB2);
+        break;
+    
+    default:
+        break;
+    }
+}
+
 int main() {
     setup_clock();
     setup_inout();
@@ -80,13 +109,8 @@ int main() {
     while (1) {
         if (commandReady) {
             cli();
+            handle_command(command);
             commandReady = 0;
-            blink16(command.rawPayload);    _delay_ms(500);
-            blink8(command.fields.address); _delay_ms(500);
-            blink8(command.fields.command); _delay_ms(500);
-            blink8(command.fields.param1);  _delay_ms(500);
-            blink8(command.fields.param2);  _delay_ms(500);
-            blink8(command.fields.param3);  _delay_ms(500);
             sei();
         }
     }
